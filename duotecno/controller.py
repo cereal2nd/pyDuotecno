@@ -24,6 +24,7 @@ HB_TIMEOUT: Final = 20
 HB_BUSEMPTY: Final = 10
 MAX_INFLIGHT: Final = 5
 STATUS_RETRANSMIT: Final = 2
+RECONNECT_TIMEOUT: Final = 180
 
 
 class PyDuotecno:
@@ -75,10 +76,26 @@ class PyDuotecno:
         self._log.debug("Disconnecting")
         self.connectionOK.clear()
 
-        self.readerTask.cancel()
-        self.hbTask.cancel()
-        self.workTask.cancel()
-        self.writerTask.cancel()
+        if self.readerTask.cancel():
+            try:
+                await self.readerTask
+            except asyncio.CancelledError:
+                pass
+        if self.hbTask.cancel():
+            try:
+                await self.hbTask
+            except asyncio.CancelledError:
+                pass
+        if self.workTask.cancel():
+            try:
+                await self.workTask
+            except asyncio.CancelledError:
+                pass
+        if self.writerTask.cancel():
+            try:
+                await self.writerTask
+            except asyncio.CancelledError:
+                pass
         if self.writer:
             self.writer.close()
         self._log.debug("Disconnecting Finished")
@@ -95,6 +112,7 @@ class PyDuotecno:
     async def _reconnect(self):
         await self.disconnect()
         await self.disableAllUnits()
+        await asyncio.sleep(RECONNECT_TIMEOUT)
         await self.continuously_check_connection()
 
     async def _do_connect(self, testOnly: bool = False, skipLoad: bool = False) -> None:
