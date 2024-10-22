@@ -256,7 +256,7 @@ class PyDuotecno:
                 self._log.debug(
                     f"Waiting until {self.nextHeartbeat} to send a HB ({time.time()})"
                 )
-                await asyncio.sleep(1)
+                await asyncio.sleep(5)
             # send the heartbeat
             self.heartbeatReceived.clear()
             try:
