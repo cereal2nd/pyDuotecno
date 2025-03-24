@@ -151,9 +151,8 @@ class PyDuotecno:
         except TimeoutError:
             await self.disconnect()
             raise InvalidPassword()
-        # if we are not testing the connection, start scanning
-        if testOnly:
-            return
+
+    async def scan(self, skipLoad: bool = False) -> None:
         # do we need to reload the modules?
         if not skipLoad:
             await self.write("[209,5]")
